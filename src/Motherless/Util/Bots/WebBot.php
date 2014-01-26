@@ -59,19 +59,19 @@ abstract class WebBot
     private $sent = false;
 
     /**
-     * Constructor
-     */
-    public function __construct()
-    {
-        $this->params = "POST" === self::REQUEST_METHOD ? $_POST : $_GET;
-    }
-
-    /**
      * Process the incoming request
+     *
+     * @param array $params The request parameters
      */
-    public function process()
+    public function process(array $params = array())
     {
-        if (self::REQUEST_METHOD === $_SERVER["REQUEST_METHOD"]) {
+        if (self::REQUEST_METHOD === $_SERVER["REQUEST_METHOD"] || !empty($params)) {
+            if (!empty($params)) {
+               $this->params = $params;
+            } else {
+                $this->params = "POST" === self::REQUEST_METHOD ? $_POST : $_GET;
+            }
+
             $required = array("name", "trigger", "content", "content_type", "content_hash", "member");
             $missing  = array_diff($required, array_keys($this->params));
             if (empty($missing)) {
@@ -243,7 +243,9 @@ abstract class WebBot
      */
     private function setStatusCode($code)
     {
-        header(" ", true, $code);
+        if (!$this->isCommandLine()) {
+            header(" ", true, $code);
+        }
         return $this;
     }
 
@@ -256,8 +258,24 @@ abstract class WebBot
      */
     private function setHeader($name, $value)
     {
-        $value = urlencode($value);
-        header("{$name}: {$value}");
+        if (!$this->isCommandLine()) {
+            $value = urlencode($value);
+            header("{$name}: {$value}");
+        }
         return $this;
+    }
+
+    /**
+     * Returns true if php is running on the command line. False if not.
+     *
+     * @return bool
+     */
+    private function isCommandLine()
+    {
+        if(php_sapi_name() == 'cli' && empty($_SERVER['REMOTE_ADDR'])) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }
