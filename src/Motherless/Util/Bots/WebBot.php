@@ -255,23 +255,21 @@ abstract class WebBot
     }
 
     /**
-     * Sends an error response to the request
+     * Sends a successful response to the request
      *
      * You call this method from the parse() method to respond to the request from motherless. The content passed
-     * to this method will placed at the *bottom* of the shout, comment, etc in red as an error message. For example
-     * when a member tries to tip another member with TipBot, and they have insufficient credits, TipBot places an
-     * error message at the bottom of the content explaining why the tip can't be sent.
+     * to this method will be appended to the bottom of the content of the shout, comment, etc.
      *
      * The status value is recorded but not shown. You will be able to audit your bots from the control panel on
      * motherless.com, and view the statuses your bot responded with.
      *
      * This method always returns true.
      *
-     * @param string $content The error message
+     * @param string $content The parsed content
      * @param string $status  The parse status
      * @return bool
      */
-    protected function sendError($content, $status = "Error!")
+    protected function sendAppend($content, $status = "Success!")
     {
         if (!$this->sent) {
             $this->setStatusCode(418)
